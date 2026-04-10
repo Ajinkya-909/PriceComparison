@@ -2,7 +2,7 @@
 
 async function fetchGoogleShoppingResults(searchQuery) {
   // Replace with your actual SearchAPI.io key
-  const API_KEY = "YOUR_API_KEY_HERE"; 
+  const API_KEY = "GFPL3va5JAf5cjFf2QQHGPg6"; 
   
   // Construct the URL. 'gl=in' sets country to India, 'hl=en' sets language to English
   const url = `https://www.searchapi.io/api/v1/search?engine=google_shopping&q=${encodeURIComponent(searchQuery)}&gl=in&hl=en&api_key=${API_KEY}`;
@@ -42,7 +42,7 @@ async function fetchGoogleShoppingResults(searchQuery) {
 
 // Execute the function immediately when the file runs
 async function runTest() {
-  const result = await fetchGoogleShoppingResults("smartphone");
+  const result = await fetchGoogleShoppingResults("shirts");
   
   if (result.success) {
       console.log("✅ SUCCESS! Here is the data received:\n");
