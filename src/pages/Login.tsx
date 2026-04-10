@@ -32,8 +32,10 @@ export default function Login() {
         await signUp(email, password);
       }
       navigate(from, { replace: true });
-    } catch {
-      setError("Authentication failed. Please try again.");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Authentication failed. Please try again.";
+      setError(errorMessage);
+      console.error("Auth error:", err);
     }
   };
 
@@ -61,6 +63,7 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 rounded-lg bg-secondary text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
               placeholder="you@example.com"
+              disabled={loading}
             />
           </div>
           <div>
@@ -71,10 +74,11 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 rounded-lg bg-secondary text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
               placeholder="••••••••"
+              disabled={loading}
             />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg">{error}</p>}
 
           <button
             type="submit"
