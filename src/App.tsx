@@ -10,6 +10,7 @@ import Navbar from "@/components/Navbar";
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Login from "@/pages/Login";
+import Trending from "@/pages/Trending";
 import Profile from "@/pages/Profile";
 import SearchResults from "@/pages/SearchResults";
 import ProductDetails from "@/pages/ProductDetails";
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/trending" element={<Trending />} />
               <Route
                 path="/profile"
                 element={

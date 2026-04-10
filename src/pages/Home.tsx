@@ -1,9 +1,13 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import ProductCard from "@/components/ProductCard";
-import { trendingProducts } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 
 export default function Home() {
+  const { products, loading } = useProducts({ limit: 5 });
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
@@ -40,12 +44,38 @@ export default function Home() {
 
       {/* Trending */}
       <section className="container mx-auto px-4 py-16">
-        <h2 className="text-2xl font-bold text-foreground mb-8">Trending Products</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {trendingProducts.map((product, i) => (
-            <ProductCard key={product.id} product={product} index={i} />
-          ))}
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-foreground">Trending Products</h2>
+          <Link
+            to="/trending"
+            className="flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all"
+          >
+            Show All <ChevronRight className="h-5 w-5" />
+          </Link>
         </div>
+
+        {loading ? (
+          <div className="flex gap-6 overflow-x-auto pb-4">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="flex-shrink-0 w-64 h-80 glass-card animate-pulse rounded-xl"
+              />
+            ))}
+          </div>
+        ) : products.length > 0 ? (
+          <div className="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory">
+            {products.map((product, i) => (
+              <div key={product.id} className="flex-shrink-0 w-64 snap-start">
+                <ProductCard product={product} index={i} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 text-muted-foreground">
+            No trending products available
+          </div>
+        )}
       </section>
     </div>
   );
