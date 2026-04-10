@@ -1,6 +1,7 @@
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import SearchBar from "@/components/SearchBar";
 import { useProducts } from "@/hooks/useProducts";
@@ -23,12 +24,6 @@ export default function SearchResults() {
         p.seller?.toLowerCase().includes(lowerQuery)
     );
   }, [query, products]);
-
-  // Trending products for when no results
-  const trendingProducts = useMemo(
-    () => products.filter((p) => p.is_trending).slice(0, 3),
-    [products]
-  );
 
   if (loading) {
     return (
@@ -78,26 +73,42 @@ export default function SearchResults() {
           </div>
         </>
       ) : (
-        <div className="text-center py-12">
-          <p className="text-xl font-semibold text-foreground mb-2">
-            {query ? "No results found" : "Enter a search term"}
-          </p>
-          <p className="text-muted-foreground mb-8">
-            {query && "Try a different search term or browse trending products"}
-          </p>
-          {trendingProducts.length > 0 && (
-            <>
-              <h3 className="text-lg font-semibold text-foreground mb-6">
-                Trending Products
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {trendingProducts.map((p, i) => (
-                  <ProductCard key={p.id} product={p} index={i} />
-                ))}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col items-center justify-center py-24 px-4"
+        >
+          <div className="text-center max-w-md">
+            <div className="mb-6">
+              <div className="inline-block p-4 bg-secondary rounded-full mb-4">
+                <svg className="w-16 h-16 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+
+            <h2 className="text-3xl font-bold text-foreground mb-3">
+              No Results Found
+            </h2>
+
+            <p className="text-muted-foreground text-lg mb-2">
+              We couldn't find any products matching "{query}"
+            </p>
+
+            <p className="text-muted-foreground mb-8">
+              Try searching for different items or browse our trending products to discover something amazing!
+            </p>
+
+            <Link
+              to="/trending"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+            >
+              Browse Trending Products
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+          </div>
+        </motion.div>
       )}
     </div>
   );
