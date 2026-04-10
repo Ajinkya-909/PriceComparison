@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Star, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
-import { Product, getBestPrice } from "@/hooks/useProducts";
+import { Product } from "@/hooks/useProducts";
 
 interface ProductCardProps {
   product: Product;
@@ -9,12 +9,6 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, index = 0 }: ProductCardProps) {
-  const bestPrice = getBestPrice(product.platformPrices);
-
-  if (!bestPrice) {
-    return null;
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -26,24 +20,24 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
         className="block glass-card overflow-hidden group relative"
       >
         {/* Badge - Trending or Discount */}
-        {product.isTrending && (
+        {product.is_trending && (
           <div className="absolute top-2 left-2 z-10 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
             <TrendingUp className="h-3 w-3" />
             Trending
           </div>
         )}
 
-        {bestPrice.discountPercentage > 0 && (
+        {product.discount_percentage && product.discount_percentage > 0 && (
           <div className="absolute top-2 right-2 z-10 bg-success text-white px-2 py-1 rounded-full text-xs font-semibold">
-            -{bestPrice.discountPercentage}%
+            -{product.discount_percentage}%
           </div>
         )}
 
         {/* Image */}
         <div className="aspect-square overflow-hidden bg-muted">
           <img
-            src={product.image}
-            alt={product.name}
+            src={product.thumbnail || "https://via.placeholder.com/400"}
+            alt={product.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy"
           />
@@ -51,41 +45,72 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
 
         {/* Info */}
         <div className="p-4">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
-            {product.category}
-          </p>
-          <h3 className="font-semibold text-foreground line-clamp-1 mb-2">
-            {product.name}
+          {/* Category */}
+          {product.category && (
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
+              {product.category}
+            </p>
+          )}
+
+          {/* Title */}
+          <h3 className="font-semibold text-foreground line-clamp-2 mb-2">
+            {product.title}
           </h3>
 
-          {/* Rating */}
-          <div className="flex items-center gap-1 mb-3">
-            <Star className="h-4 w-4 fill-warning text-warning" />
-            <span className="text-sm font-medium text-foreground">{product.rating}</span>
+          {/* Seller */}
+          {product.seller && (
+            <p className="text-xs text-muted-foreground mb-2">{product.seller}</p>
+          )}
+
+          {/* Rating & Reviews */}
+          <div className="flex items-center gap-2 mb-3">
+            {product.rating ? (
+              <>
+                <Star className="h-4 w-4 fill-warning text-warning" />
+                <span className="text-sm font-medium text-foreground">
+                  {product.rating.toFixed(1)}
+                </span>
+                {product.reviews && (
+                  <span className="text-xs text-muted-foreground">
+                    ({product.reviews} reviews)
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-xs text-muted-foreground">No ratings yet</span>
+            )}
           </div>
 
           {/* Pricing */}
           <div className="space-y-2">
+            {/* Price */}
             <div className="flex items-baseline gap-2">
-              <p className="text-lg font-bold text-primary">
-                ₹{bestPrice.finalPrice.toLocaleString()}
-              </p>
-              {bestPrice.discountAmount > 0 && (
+              {product.price ? (
+                <p className="text-lg font-bold text-primary">{product.price}</p>
+              ) : product.extracted_price ? (
+                <p className="text-lg font-bold text-primary">
+                  ₹{product.extracted_price.toLocaleString("en-IN")}
+                </p>
+              ) : null}
+
+              {product.original_price && (
                 <p className="text-sm text-muted-foreground line-through">
-                  ₹{bestPrice.originalPrice.toLocaleString()}
+                  {product.original_price}
                 </p>
               )}
             </div>
 
-            {/* Platform & Delivery */}
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{bestPrice.platform}</span>
-              {bestPrice.deliveryDays && (
-                <span className="text-success font-semibold">
-                  {bestPrice.deliveryDays}d delivery
-                </span>
-              )}
-            </div>
+            {/* Delivery Info */}
+            {product.delivery && (
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-success font-semibold">✓ {product.delivery}</span>
+              </div>
+            )}
+
+            {/* Return Policy */}
+            {product.delivery_return && (
+              <p className="text-xs text-muted-foreground">{product.delivery_return}</p>
+            )}
           </div>
         </div>
       </Link>

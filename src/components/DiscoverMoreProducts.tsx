@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { useProducts } from "@/hooks/useProducts";
 
@@ -12,37 +13,13 @@ export default function DiscoverMoreProducts({
   category,
   currentProductId,
 }: DiscoverMoreProductsProps) {
-  const { products, loading, hasMore, loadMore } = useProducts({
-    limit: 12,
+  const { products, loading } = useProducts({
+    limit: 8,
     category,
   });
 
-  const observerTarget = useRef<HTMLDivElement>(null);
-
   // Filter out current product and get only the ones from same category
-  const filteredProducts = products.filter((p) => p.id !== currentProductId);
-
-  // Intersection Observer for infinite scroll
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          loadMore();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => {
-      if (observerTarget.current) {
-        observer.unobserve(observerTarget.current);
-      }
-    };
-  }, [hasMore, loading, loadMore]);
+  const filteredProducts = products.filter((p) => p.id !== currentProductId).slice(0, 8);
 
   if (filteredProducts.length === 0 && !loading) {
     return null;
@@ -50,7 +27,15 @@ export default function DiscoverMoreProducts({
 
   return (
     <section className="mt-16 pt-8 border-t border-border">
-      <h2 className="text-2xl font-bold text-foreground mb-8">Discover More Products</h2>
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-2xl font-bold text-foreground">Discover More Products</h2>
+        <Link
+          to="/trending"
+          className="flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all"
+        >
+          Show All <ChevronRight className="h-5 w-5" />
+        </Link>
+      </div>
 
       {filteredProducts.length > 0 ? (
         <>
@@ -78,15 +63,6 @@ export default function DiscoverMoreProducts({
               ))}
             </div>
           )}
-
-          {/* Infinite scroll trigger */}
-          <div ref={observerTarget} className="w-full h-10 mt-8 flex items-center justify-center">
-            {!hasMore && filteredProducts.length > 0 && (
-              <p className="text-muted-foreground text-center text-sm">
-                No more products in this category
-              </p>
-            )}
-          </div>
         </>
       ) : loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

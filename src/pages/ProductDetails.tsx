@@ -1,24 +1,18 @@
 import { useParams, Link } from "react-router-dom";
-import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Star,
   ExternalLink,
   ArrowLeft,
-  Check,
   Truck,
-  Shield,
-  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import DiscoverMoreProducts from "@/components/DiscoverMoreProducts";
-import InstallmentPlans from "@/components/InstallmentPlans";
 import { useProductById } from "@/hooks/useProductById";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
-  const { product, loading, error } = useProductById(id || "");
-  const [selectedPlatformIdx, setSelectedPlatformIdx] = useState(0);
-  const [selectedTenure, setSelectedTenure] = useState<number | undefined>(undefined);
+  const { product, otherSellers, loading, error } = useProductById(id || "");
 
   if (loading) {
     return (
@@ -53,11 +47,6 @@ export default function ProductDetails() {
     );
   }
 
-  const selectedPlatform = product.platformPrices[selectedPlatformIdx];
-  const selectedInstallment = selectedPlatform.installments.find(
-    (inst) => inst.tenureMonths === selectedTenure
-  );
-
   return (
     <div className="container mx-auto px-4 py-8">
       <Link
@@ -76,195 +65,203 @@ export default function ProductDetails() {
         {/* Image */}
         <div className="glass-card overflow-hidden rounded-xl">
           <img
-            src={product.image}
-            alt={product.name}
+            src={product.thumbnail || "https://via.placeholder.com/600"}
+            alt={product.title}
             className="w-full aspect-square object-cover"
           />
         </div>
 
         {/* Info */}
         <div className="space-y-6">
+          {/* Title & Category */}
           <div>
-            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">
-              {product.category}
-            </p>
+            {product.category && (
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                {product.category}
+              </p>
+            )}
             <h1 className="text-3xl font-bold text-foreground mb-2">
-              {product.name}
+              {product.title}
             </h1>
             {product.brand && (
               <p className="text-muted-foreground">Brand: {product.brand}</p>
             )}
           </div>
 
-          {/* Rating */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`h-5 w-5 ${
-                    i < Math.floor(product.rating)
-                      ? "fill-warning text-warning"
-                      : "text-muted-foreground"
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="font-semibold text-foreground">{product.rating}</span>
+          {/* Rating & Reviews */}
+          <div className="flex items-center gap-3">
+            {product.rating ? (
+              <>
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-5 w-5 ${
+                        i < Math.floor(product.rating || 0)
+                          ? "fill-warning text-warning"
+                          : "text-muted-foreground"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div>
+                  <span className="font-semibold text-foreground">
+                    {product.rating.toFixed(1)}
+                  </span>
+                  {product.reviews && (
+                    <span className="text-muted-foreground text-sm ml-1">
+                      ({product.reviews} reviews)
+                    </span>
+                  )}
+                </div>
+              </>
+            ) : (
+              <p className="text-muted-foreground">No ratings available</p>
+            )}
           </div>
 
           {/* Description */}
-          <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+          {product.description && (
+            <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+          )}
 
-          {/* Warranty & Info */}
+          {/* Key Info Box */}
           <div className="grid grid-cols-2 gap-3 py-4 border-t border-b border-border">
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              <div className="text-sm">
-                <p className="font-semibold text-foreground">Warranty</p>
-                <p className="text-muted-foreground">{product.warrantyMonths} months</p>
+            {product.seller && (
+              <div className="flex items-center gap-2">
+                <span className="h-5 w-5 text-primary">🏪</span>
+                <div className="text-sm">
+                  <p className="font-semibold text-foreground">Seller</p>
+                  <p className="text-muted-foreground text-xs">{product.seller}</p>
+                </div>
               </div>
-            </div>
-            {selectedPlatform?.deliveryDays && (
+            )}
+            {product.delivery && (
               <div className="flex items-center gap-2">
                 <Truck className="h-5 w-5 text-primary" />
                 <div className="text-sm">
                   <p className="font-semibold text-foreground">Delivery</p>
-                  <p className="text-muted-foreground">
-                    {selectedPlatform.deliveryDays} days
-                  </p>
+                  <p className="text-muted-foreground text-xs">{product.delivery}</p>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Platform Selection */}
-          <div className="space-y-3">
-            <p className="font-semibold text-foreground">Select Platform</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {product.platformPrices.map((platform, idx) => (
-                <button
-                  key={platform.id}
-                  onClick={() => {
-                    setSelectedPlatformIdx(idx);
-                    setSelectedTenure(undefined);
-                  }}
-                  className={`p-3 rounded-lg border-2 transition-all ${
-                    selectedPlatformIdx === idx
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/50"
-                  } ${!platform.inStock ? "opacity-50" : ""}`}
-                >
-                  <p className="font-semibold text-foreground text-sm">
-                    {platform.platform}
-                  </p>
-                  <p className="text-lg font-bold text-primary">
-                    ₹{platform.finalPrice.toLocaleString()}
-                  </p>
-                  {platform.discountPercentage > 0 && (
-                    <p className="text-xs text-success">
-                      Save {platform.discountPercentage}% (₹{platform.discountAmount})
-                    </p>
-                  )}
-                  {!platform.inStock && (
-                    <p className="text-xs text-destructive mt-1">Out of Stock</p>
-                  )}
-                </button>
-              ))}
+          {/* Pricing Details */}
+          <div className="space-y-3 p-4 bg-secondary rounded-lg">
+            {product.original_price && (
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Original Price:</span>
+                <span className="font-semibold">{product.original_price}</span>
+              </div>
+            )}
+
+            {product.discount_percentage && product.discount_percentage > 0 && (
+              <div className="flex justify-between items-center text-success">
+                <span className="text-muted-foreground">Discount:</span>
+                <span className="font-semibold">{product.discount_percentage}% Off</span>
+              </div>
+            )}
+
+            <div className="border-t border-border pt-3 flex justify-between items-center">
+              <span className="font-semibold text-foreground">Price:</span>
+              {product.price ? (
+                <span className="text-2xl font-bold text-primary">{product.price}</span>
+              ) : product.extracted_price ? (
+                <span className="text-2xl font-bold text-primary">
+                  ₹{product.extracted_price.toLocaleString("en-IN")}
+                </span>
+              ) : null}
             </div>
           </div>
 
-          {/* Pricing Details */}
-          {selectedPlatform && (
-            <div className="space-y-3 p-4 bg-secondary rounded-lg">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Original Price:</span>
-                <span className="font-semibold">
-                  ₹{selectedPlatform.originalPrice.toLocaleString()}
-                </span>
+          {/* Additional Details */}
+          <div className="space-y-2">
+            {product.delivery_return && (
+              <div className="flex items-start gap-2">
+                <RefreshCw className="h-4 w-4 text-primary mt-0.5" />
+                <p className="text-sm text-foreground">{product.delivery_return}</p>
               </div>
-              {selectedPlatform.discountAmount > 0 && (
-                <>
-                  <div className="flex justify-between items-center text-success">
-                    <span className="text-muted-foreground">Discount:</span>
-                    <span className="font-semibold">
-                      -₹{selectedPlatform.discountAmount.toLocaleString()}{" "}
-                      ({selectedPlatform.discountPercentage}%)
-                    </span>
-                  </div>
-                  <div className="border-t border-border pt-3 flex justify-between items-center">
-                    <span className="font-semibold text-foreground">Final Price:</span>
-                    <span className="text-2xl font-bold text-primary">
-                      ₹{selectedPlatform.finalPrice.toLocaleString()}
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
+            )}
+            {product.payment_methods && (
+              <div className="flex items-start gap-2">
+                <span className="text-primary mt-0.5">💳</span>
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-semibold">Payments: </span>
+                  {product.payment_methods}
+                </p>
+              </div>
+            )}
+          </div>
 
-          {/* Stock Status */}
-          {selectedPlatform && (
-            <div
-              className={`flex items-center gap-2 p-3 rounded-lg ${
-                selectedPlatform.inStock
-                  ? "bg-success/10 text-success"
-                  : "bg-destructive/10 text-destructive"
-              }`}
+          {/* View on Platform Button */}
+          {product.product_link && (
+            <a
+              href={product.product_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors"
             >
-              {selectedPlatform.inStock ? (
-                <>
-                  <Check className="h-5 w-5" />
-                  <span className="font-semibold">
-                    In Stock ({selectedPlatform.stockQuantity} available)
-                  </span>
-                </>
-              ) : (
-                <>
-                  <AlertCircle className="h-5 w-5" />
-                  <span className="font-semibold">Out of Stock</span>
-                </>
-              )}
-            </div>
+              View on Platform
+              <ExternalLink className="h-4 w-4" />
+            </a>
           )}
-
-          {/* Installment Plans */}
-          {selectedPlatform && selectedPlatform.installments.length > 0 && (
-            <InstallmentPlans
-              installments={selectedPlatform.installments}
-              selectedTenure={selectedTenure}
-              onSelect={setSelectedTenure}
-            />
-          )}
-
-          {/* Selected Installment Summary */}
-          {selectedInstallment && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-4 bg-primary/5 border border-primary rounded-lg space-y-2"
-            >
-              <p className="text-sm text-muted-foreground">
-                Pay in {selectedInstallment.tenureMonths} months
-              </p>
-              <p className="text-2xl font-bold text-primary">
-                ₹{selectedInstallment.monthlyPayment.toLocaleString()}/month
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Total: ₹{selectedInstallment.totalAmount.toLocaleString()}
-              </p>
-            </motion.div>
-          )}
-
-          {/* Buy Button */}
-          <button className="w-full py-3 rounded-lg hero-gradient text-primary-foreground font-semibold transition-opacity hover:opacity-90">
-            Buy Now
-          </button>
         </div>
       </motion.div>
 
-      {/* Discover More Products */}
-      <DiscoverMoreProducts category={product.category} currentProductId={product.id} />
+      {/* Other Sellers Section */}
+      {otherSellers && otherSellers.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mb-12"
+        >
+          <h2 className="text-2xl font-bold text-foreground mb-6">
+            Available on Other Platforms
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {otherSellers.map((seller) => (
+              <Link
+                key={seller.id}
+                to={`/product/${seller.id}`}
+                className="glass-card p-4 rounded-lg hover:bg-secondary transition-colors"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="font-semibold text-foreground">{seller.seller || "Unknown Seller"}</h3>
+                </div>
+
+                <div className="space-y-2">
+                  {seller.extracted_price && (
+                    <p className="text-lg font-bold text-primary">
+                      ₹{seller.extracted_price.toLocaleString("en-IN")}
+                    </p>
+                  )}
+
+                  {seller.delivery && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Truck className="h-3 w-3" /> {seller.delivery}
+                    </p>
+                  )}
+
+                  {seller.rating && (
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-warning text-warning" />
+                      <span className="text-sm font-medium">{seller.rating.toFixed(1)}</span>
+                    </div>
+                  )}
+                </div>
+
+                <button className="w-full mt-3 px-3 py-2 bg-primary/10 text-primary rounded text-sm font-semibold hover:bg-primary/20 transition-colors">
+                  View Details
+                </button>
+              </Link>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      <DiscoverMoreProducts />
     </div>
   );
 }

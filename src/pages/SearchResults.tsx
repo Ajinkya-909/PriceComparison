@@ -10,22 +10,23 @@ export default function SearchResults() {
   const query = params.get("q") || "";
   const { products, loading, error } = useProducts({ limit: 100 });
 
-  // Search through products
+  // Search through products - use new flat schema
   const results = useMemo(() => {
     if (!query || products.length === 0) return [];
     const lowerQuery = query.toLowerCase();
     return products.filter(
       (p) =>
-        p.name.toLowerCase().includes(lowerQuery) ||
-        p.description.toLowerCase().includes(lowerQuery) ||
-        p.category.toLowerCase().includes(lowerQuery) ||
-        p.brand?.toLowerCase().includes(lowerQuery)
+        p.title?.toLowerCase().includes(lowerQuery) ||
+        p.description?.toLowerCase().includes(lowerQuery) ||
+        p.category?.toLowerCase().includes(lowerQuery) ||
+        p.brand?.toLowerCase().includes(lowerQuery) ||
+        p.seller?.toLowerCase().includes(lowerQuery)
     );
   }, [query, products]);
 
   // Trending products for when no results
   const trendingProducts = useMemo(
-    () => products.filter((p) => p.isTrending).slice(0, 3),
+    () => products.filter((p) => p.is_trending).slice(0, 3),
     [products]
   );
 
@@ -47,7 +48,10 @@ export default function SearchResults() {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-destructive">{error}</p>
+        <div className="max-w-xl mb-8">
+          <SearchBar defaultValue={query} size="lg" />
+        </div>
+        <p className="text-destructive text-lg">{error}</p>
       </div>
     );
   }
@@ -79,7 +83,7 @@ export default function SearchResults() {
             {query ? "No results found" : "Enter a search term"}
           </p>
           <p className="text-muted-foreground mb-8">
-            {query && "Try a different search term"}
+            {query && "Try a different search term or browse trending products"}
           </p>
           {trendingProducts.length > 0 && (
             <>

@@ -1,10 +1,10 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import ProductCard from "@/components/ProductCard";
-import { useProducts } from "@/hooks/useProducts";
+import { useDiverseProducts } from "@/hooks/useProducts";
 
 export default function TrendingProducts() {
-  const { products, loading, hasMore, loadMore } = useProducts({ limit: 12 });
+  const { products, loading, hasMore, loadMore } = useDiverseProducts(12);
   const observerTarget = useRef<HTMLDivElement>(null);
 
   // Intersection Observer for infinite scroll
@@ -57,7 +57,7 @@ export default function TrendingProducts() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product, i) => (
                 <motion.div
-                  key={product.id}
+                  key={`${product.id}-${i}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: (i % 4) * 0.1 }}
@@ -86,7 +86,7 @@ export default function TrendingProducts() {
             >
               {!hasMore && products.length > 0 && (
                 <p className="text-muted-foreground text-center">
-                  No more products to load
+                  Showing repeated products
                 </p>
               )}
             </div>

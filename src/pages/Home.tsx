@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import ProductCard from "@/components/ProductCard";
-import { useProducts } from "@/hooks/useProducts";
+import { useDiverseProducts } from "@/hooks/useProducts";
 
 export default function Home() {
-  const { products, loading } = useProducts({ limit: 5 });
+  const { products, loading } = useDiverseProducts(5);
 
   return (
     <div className="min-h-screen">
