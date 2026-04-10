@@ -9,10 +9,21 @@ import {
 } from "lucide-react";
 import DiscoverMoreProducts from "@/components/DiscoverMoreProducts";
 import { useProductById } from "@/hooks/useProductById";
+import { calculateDeliveryPrice, formatPrice } from "@/lib/deliveryCalculator";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
   const { product, otherSellers, loading, error } = useProductById(id || "");
+
+  // Calculate delivery and total price
+  const deliveryCalc = product ? calculateDeliveryPrice({
+    price: product.extracted_price,
+    brand: product.brand,
+    hasReturnPolicy: !!product.delivery_return,
+    hasDeliveryInfo: !!product.delivery,
+    seller: product.seller,
+    deliveryReturn: product.delivery_return,
+  }) : null;
 
   if (loading) {
     return (
@@ -164,15 +175,43 @@ export default function ProductDetails() {
             )}
 
             <div className="border-t border-border pt-3 flex justify-between items-center">
-              <span className="font-semibold text-foreground">Price:</span>
+              <span className="font-semibold text-foreground">Product Price:</span>
               {product.price ? (
-                <span className="text-2xl font-bold text-primary">{product.price}</span>
+                <span className="text-xl font-bold text-primary">{product.price}</span>
               ) : product.extracted_price ? (
-                <span className="text-2xl font-bold text-primary">
-                  ₹{product.extracted_price.toLocaleString("en-IN")}
+                <span className="text-xl font-bold text-primary">
+                  {formatPrice(product.extracted_price)}
                 </span>
               ) : null}
             </div>
+
+            {/* Delivery Charge Breakdown */}
+            {deliveryCalc && product.extracted_price && (
+              <>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Truck className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Delivery Charge:</span>
+                  </div>
+                  <span className={`font-semibold ${deliveryCalc.isFreeDelivery ? "text-success" : "text-foreground"}`}>
+                    {deliveryCalc.isFreeDelivery ? "FREE" : formatPrice(deliveryCalc.deliveryPrice)}
+                  </span>
+                </div>
+
+                {deliveryCalc.deliveryEstimate && (
+                  <div className="text-xs text-muted-foreground italic">
+                    📦 Estimated: {deliveryCalc.deliveryEstimate}
+                  </div>
+                )}
+
+                <div className="border-t border-border pt-3 flex justify-between items-center bg-primary/5 p-3 rounded">
+                  <span className="font-bold text-foreground text-lg">Total Price (incl. Delivery):</span>
+                  <span className="text-2xl font-bold text-primary">
+                    {formatPrice(deliveryCalc.totalPrice)}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Additional Details */}
@@ -221,42 +260,65 @@ export default function ProductDetails() {
             Available on Other Platforms
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {otherSellers.map((seller) => (
-              <Link
-                key={seller.id}
-                to={`/product/${seller.id}`}
-                className="glass-card p-4 rounded-lg hover:bg-secondary transition-colors"
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-semibold text-foreground">{seller.seller || "Unknown Seller"}</h3>
-                </div>
+            {otherSellers.map((seller) => {
+              const sellerDelivery = calculateDeliveryPrice({
+                price: seller.extracted_price,
+                brand: seller.brand,
+                hasReturnPolicy: !!seller.delivery_return,
+                hasDeliveryInfo: !!seller.delivery,
+                seller: seller.seller,
+                deliveryReturn: seller.delivery_return,
+              });
 
-                <div className="space-y-2">
-                  {seller.extracted_price && (
-                    <p className="text-lg font-bold text-primary">
-                      ₹{seller.extracted_price.toLocaleString("en-IN")}
-                    </p>
-                  )}
+              return (
+                <Link
+                  key={seller.id}
+                  to={`/product/${seller.id}`}
+                  className="glass-card p-4 rounded-lg hover:bg-secondary transition-colors"
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="font-semibold text-foreground">{seller.seller || "Unknown Seller"}</h3>
+                  </div>
 
-                  {seller.delivery && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Truck className="h-3 w-3" /> {seller.delivery}
-                    </p>
-                  )}
+                  <div className="space-y-2">
+                    {seller.extracted_price && (
+                      <>
+                        <p className="text-lg font-bold text-primary">
+                          {formatPrice(seller.extracted_price)}
+                        </p>
 
-                  {seller.rating && (
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-warning text-warning" />
-                      <span className="text-sm font-medium">{seller.rating.toFixed(1)}</span>
-                    </div>
-                  )}
-                </div>
+                        {/* Delivery Charge */}
+                        <div className="flex items-center gap-1 text-xs">
+                          <Truck className="h-3 w-3" />
+                          <span className={sellerDelivery.isFreeDelivery ? "text-success font-semibold" : "text-muted-foreground"}>
+                            {sellerDelivery.isFreeDelivery ? "Free Delivery" : `+ ${formatPrice(sellerDelivery.deliveryPrice)}`}
+                          </span>
+                        </div>
 
-                <button className="w-full mt-3 px-3 py-2 bg-primary/10 text-primary rounded text-sm font-semibold hover:bg-primary/20 transition-colors">
-                  View Details
-                </button>
-              </Link>
-            ))}
+                        {/* Total Price */}
+                        <div className="pt-2 border-t border-border">
+                          <p className="text-xs text-muted-foreground mb-1">Total:</p>
+                          <p className="text-base font-bold text-primary">
+                            {formatPrice(sellerDelivery.totalPrice)}
+                          </p>
+                        </div>
+                      </>
+                    )}
+
+                    {seller.rating && (
+                      <div className="flex items-center gap-1 pt-2 border-t border-border">
+                        <Star className="h-4 w-4 fill-warning text-warning" />
+                        <span className="text-sm font-medium">{seller.rating.toFixed(1)}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <button className="w-full mt-3 px-3 py-2 bg-primary/10 text-primary rounded text-sm font-semibold hover:bg-primary/20 transition-colors">
+                    View Details
+                  </button>
+                </Link>
+              );
+            })}
           </div>
         </motion.div>
       )}

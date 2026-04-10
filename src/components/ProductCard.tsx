@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { Star, TrendingUp } from "lucide-react";
+import { Star, TrendingUp, ShoppingBag, Truck } from "lucide-react";
 import { motion } from "framer-motion";
 import { Product } from "@/hooks/useProducts";
+import { calculateDeliveryPrice, formatPrice } from "@/lib/deliveryCalculator";
 
 interface ProductCardProps {
   product: Product;
@@ -9,15 +10,34 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, index = 0 }: ProductCardProps) {
+  const handleShopNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (product.product_link) {
+      window.open(product.product_link, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  // Calculate delivery and total price
+  const deliveryCalc = calculateDeliveryPrice({
+    price: product.extracted_price,
+    brand: product.brand,
+    hasReturnPolicy: !!product.delivery_return,
+    hasDeliveryInfo: !!product.delivery,
+    seller: product.seller,
+    deliveryReturn: product.delivery_return,
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.08 }}
+      className="h-full"
     >
       <Link
         to={`/product/${product.id}`}
-        className="block glass-card overflow-hidden group relative"
+        className="block glass-card overflow-hidden group relative h-full flex flex-col"
       >
         {/* Badge - Trending or Discount */}
         {product.is_trending && (
@@ -100,6 +120,30 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
               )}
             </div>
 
+            {/* Delivery Charge Display */}
+            {product.extracted_price && (
+              <div className="flex items-center gap-2 text-xs">
+                <Truck className="h-3 w-3 text-muted-foreground" />
+                <span className={deliveryCalc.isFreeDelivery ? "text-success font-semibold" : "text-muted-foreground"}>
+                  {deliveryCalc.isFreeDelivery
+                    ? "Free Delivery"
+                    : `+ ${formatPrice(deliveryCalc.deliveryPrice)} delivery`}
+                </span>
+              </div>
+            )}
+
+            {/* Total Price */}
+            {product.extracted_price && (
+              <div className="pt-2 border-t border-border">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-medium text-muted-foreground">Total Price:</span>
+                  <span className="text-base font-bold text-primary">
+                    {formatPrice(deliveryCalc.totalPrice)}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Delivery Info */}
             {product.delivery && (
               <div className="flex items-center gap-2 text-xs">
@@ -110,6 +154,17 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
             {/* Return Policy */}
             {product.delivery_return && (
               <p className="text-xs text-muted-foreground">{product.delivery_return}</p>
+            )}
+
+            {/* Shop Now Button */}
+            {product.product_link && (
+              <button
+                onClick={handleShopNow}
+                className="w-full mt-3 px-4 py-2 bg-primary text-primary-foreground rounded-md font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+              >
+                <ShoppingBag className="h-4 w-4" />
+                Shop Now
+              </button>
             )}
           </div>
         </div>
