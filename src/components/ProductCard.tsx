@@ -7,9 +7,17 @@ import { calculateDeliveryPrice, formatPrice } from "@/lib/deliveryCalculator";
 interface ProductCardProps {
   product: Product;
   index?: number;
+  onCardClick?: (product: Product) => void; // For overlay mode
 }
 
-export default function ProductCard({ product, index = 0 }: ProductCardProps) {
+export default function ProductCard({ product, index = 0, onCardClick }: ProductCardProps) {
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (onCardClick) {
+      e.preventDefault();
+      onCardClick(product);
+    }
+  };
+
   const handleShopNow = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -28,6 +36,11 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
     deliveryReturn: product.delivery_return,
   });
 
+  const CardWrapper = onCardClick ? "div" : Link;
+  const cardProps = onCardClick 
+    ? { onClick: handleCardClick, role: "button", style: { cursor: "pointer" } }
+    : { to: `/product/${product.id}` };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -35,9 +48,9 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
       transition={{ duration: 0.4, delay: index * 0.08 }}
       className="h-full"
     >
-      <Link
-        to={`/product/${product.id}`}
-        className="block glass-card overflow-hidden group relative h-full flex flex-col"
+      <CardWrapper
+        {...cardProps}
+        className="block glass-card overflow-hidden group relative h-full flex flex-col hover:shadow-lg transition-shadow"
       >
         {/* Badge - Trending or Discount */}
         {product.is_trending && (
@@ -168,7 +181,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
             )}
           </div>
         </div>
-      </Link>
+      </CardWrapper>
     </motion.div>
   );
 }

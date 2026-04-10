@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, LogOut, User } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import SearchBar from "@/components/SearchBar";
+// import SearchBar from "@/components/SearchBar";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Navbar() {
@@ -23,9 +23,9 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop */}
-        <div className="hidden md:flex items-center gap-4 flex-1 max-w-md mx-8">
+        {/* <div className="hidden md:flex items-center gap-4 flex-1 max-w-md mx-8">
           <SearchBar className="w-full" />
-        </div>
+        </div> */}
 
         <div className="hidden md:flex items-center gap-3">
           <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -63,7 +63,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-background px-4 py-4 space-y-3 animate-fade-in">
-          <SearchBar className="w-full" />
+          {/* <SearchBar className="w-full" /> */}
           <Link to="/about" onClick={() => setMobileOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground">
             About
           </Link>
