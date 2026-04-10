@@ -1,13 +1,23 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import { LogOut, Mail, User } from "lucide-react";
+import { LogOut, Mail, User, Trash2 } from "lucide-react";
+import { clearAllSearchCache } from "@/lib/searchCache";
+import { useState } from "react";
 
 export default function Profile() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [cacheCleared, setCacheCleared] = useState(false);
+
+  const handleClearCache = () => {
+    clearAllSearchCache();
+    setCacheCleared(true);
+    setTimeout(() => setCacheCleared(false), 3000);
+  };
 
   const handleSignOut = async () => {
+    clearAllSearchCache();
     await signOut();
     navigate("/");
   };
@@ -47,13 +57,29 @@ export default function Profile() {
           </div>
         </div>
 
-        <button
-          onClick={handleSignOut}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors text-sm font-medium"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </button>
+        {cacheCleared && (
+          <div className="mb-4 p-3 rounded-lg bg-success/10 border border-success text-success text-sm font-medium">
+            ✓ Cache cleared successfully
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <button
+            onClick={handleClearCache}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-warning/50 text-warning hover:bg-warning hover:text-warning-foreground transition-colors text-sm font-medium"
+          >
+            <Trash2 className="h-4 w-4" />
+            Clear Cache
+          </button>
+
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors text-sm font-medium"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </button>
+        </div>
       </motion.div>
     </div>
   );

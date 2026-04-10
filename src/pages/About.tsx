@@ -12,9 +12,9 @@ export default function About() {
   return (
     <div className="container mx-auto px-4 py-16 max-w-4xl">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">About CompareIt</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">About PriceDekho</h1>
         <p className="text-muted-foreground text-lg mb-12 max-w-2xl">
-          CompareIt is a product comparison platform that helps you find the best deals across major online retailers. Stop switching between tabs — compare prices in one clean view.
+          PriceDekho is a smart price comparison platform that helps you find the best deals on any product across major online retailers. We compare prices in real-time so you get the best value every time you shop.
         </p>
       </motion.div>
 

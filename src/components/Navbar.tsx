@@ -4,6 +4,7 @@ import { Menu, X, LogOut, User } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 // import SearchBar from "@/components/SearchBar";
 import ThemeToggle from "@/components/ThemeToggle";
+import Logo from "@/components/Logo";
 
 export default function Navbar() {
   const { user, signOut } = useAuth();
@@ -18,8 +19,11 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <Link to="/" className="text-xl font-bold text-primary tracking-tight">
-          CompareIt
+        <Link to="/" className="flex items-center gap-2 group">
+          <Logo className="h-8 w-8 group-hover:scale-110 transition-transform" />
+          <span className="text-xl font-bold bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
+            PriceDekho
+          </span>
         </Link>
 
         {/* Desktop */}
