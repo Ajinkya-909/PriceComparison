@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import ProductCard from "@/components/ProductCard";
 import { useDiverseProducts } from "@/hooks/useProducts";
@@ -6,6 +7,12 @@ import { useDiverseProducts } from "@/hooks/useProducts";
 export default function TrendingProducts() {
   const { products, loading, hasMore, loadMore } = useDiverseProducts(12);
   const observerTarget = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
@@ -27,7 +34,7 @@ export default function TrendingProducts() {
         observer.unobserve(observerTarget.current);
       }
     };
-  }, [hasMore, loading, loadMore]);
+  }, [hasMore, loading, loadMore, products.length]);
 
   return (
     <div className="min-h-screen">
@@ -55,16 +62,22 @@ export default function TrendingProducts() {
         {products.length > 0 ? (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products.map((product, i) => (
-                <motion.div
-                  key={`${product.id}-${i}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: (i % 4) * 0.1 }}
-                >
-                  <ProductCard product={product} index={i} />
-                </motion.div>
-              ))}
+              {products.map((product, i) => {
+                // Attach observer ref to 4th last product
+                const isFourthLastProduct = i === products.length - 4 && products.length > 4;
+                
+                return (
+                  <motion.div
+                    key={`${product.id}-${i}`}
+                    ref={isFourthLastProduct ? observerTarget : null}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <ProductCard product={product} index={i} />
+                  </motion.div>
+                );
+              })}
             </div>
 
             {/* Loading skeleton for more products */}
@@ -81,11 +94,10 @@ export default function TrendingProducts() {
 
             {/* Infinite scroll trigger */}
             <div
-              ref={observerTarget}
-              className="w-full h-10 mt-16 flex items-center justify-center"
+              className="w-full h-5 mt-8 flex items-center justify-center"
             >
               {!hasMore && products.length > 0 && (
-                <p className="text-muted-foreground text-center">
+                <p className="text-muted-foreground text-center mt-8">
                   Showing repeated products
                 </p>
               )}

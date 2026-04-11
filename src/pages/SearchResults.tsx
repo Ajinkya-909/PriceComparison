@@ -1,4 +1,4 @@
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Loader } from "lucide-react";
@@ -17,7 +17,13 @@ import {
 
 export default function SearchResults() {
   const [params] = useSearchParams();
+  const location = useLocation();
   const query = params.get("q") || "";
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
   
   const [results, setResults] = useState<ShoppingProduct[]>([]);
   const [loading, setLoading] = useState(true);

@@ -1,4 +1,6 @@
 import { motion } from "framer-motion";
+import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { BarChart3, Search, ShieldCheck, Zap } from "lucide-react";
 
 const features = [
@@ -9,6 +11,12 @@ const features = [
 ];
 
 export default function About() {
+  const location = useLocation();
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
   return (
     <div className="container mx-auto px-4 py-16 max-w-4xl">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>

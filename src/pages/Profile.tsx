@@ -1,14 +1,20 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { LogOut, Mail, User, Trash2 } from "lucide-react";
 import { clearAllSearchCache } from "@/lib/searchCache";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Profile() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [cacheCleared, setCacheCleared] = useState(false);
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
 
   const handleClearCache = () => {
     clearAllSearchCache();

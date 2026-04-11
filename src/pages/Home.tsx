@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import ProductCard from "@/components/ProductCard";
@@ -13,10 +13,11 @@ const TypewriterText = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const texts = [
-    "Compare prices across Amazon, Flipkart, Best Buy and more",
-    "Save money on every purchase",
-    "Smart delivery cost calculations",
-    "Real-time price updates",
+    "Search smartphones, laptops, or any tech gadget",
+    "Find deals on groceries, food, and daily essentials",
+    "Compare prices on clothes, accessories, and fashion",
+    "Search anything online - we compare prices instantly",
+    "From tech to travel to groceries - compare it all",
   ];
 
   useEffect(() => {
@@ -62,6 +63,12 @@ const TypewriterText = () => {
 
 export default function Home() {
   const { products, loading } = useDiverseProducts(5);
+  const location = useLocation();
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
 
   return (
     <div className="min-h-screen">

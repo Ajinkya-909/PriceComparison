@@ -1,4 +1,5 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Star,
@@ -13,7 +14,13 @@ import { calculateDeliveryPrice, formatPrice } from "@/lib/deliveryCalculator";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const { product, otherSellers, loading, error } = useProductById(id || "");
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
 
   // Calculate delivery and total price
   const deliveryCalc = product ? calculateDeliveryPrice({
